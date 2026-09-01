@@ -1,0 +1,27 @@
+{
+  "name": "aaas",
+  "version": "1.0.0",
+  "description": "Auth-as-a-Service — Hono + D1 (Cloudflare Workers) — Day 01 of 30 Services",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "cf:typegen": "wrangler types",
+    "check": "node check.mjs",
+    "db:create": "wrangler d1 create auth-db",
+    "db:migrate:local": "wrangler d1 execute auth-db --local --file=./migrations/0001_initial.sql",
+    "db:migrate:remote": "wrangler d1 execute auth-db --remote --file=./migrations/0001_initial.sql"
+  },
+  "dependencies": {
+    "hono": "^4.7.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250821.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.24.0"
+  },
+  "overrides": {
+    "@cloudflare/workers-types": "^4.20250821.0"
+  }
+}

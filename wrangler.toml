@@ -1,0 +1,21 @@
+name = "aaas"
+main = "src/index.ts"
+compatibility_date = "2024-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 — D1 binding used as c.env.DB in src/index.ts
+[[d1_databases]]
+binding = "DB"
+database_name = "auth-db"
+database_id = "41e0f1fc-87a6-43ae-8141-e38115a22b7e"
+
+# Secrets — DO NOT put real values here. Use:
+#   wrangler secret put JWT_SECRET
+#   wrangler secret put REFRESH_SECRET
+# For local dev, copy .dev.vars.example -> .dev.vars
+[vars]
+ENVIRONMENT = "production"
+
+# Migrations
+# [migrations] dir is auto-detected; explicit config for clarity:
+# Use `wrangler d1 execute auth-db --file=./migrations/0001_initial.sql`

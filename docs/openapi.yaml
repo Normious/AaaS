@@ -1,0 +1,246 @@
+openapi: 3.0.3
+info:
+  title: AAAS — Auth-as-a-Service
+  version: 1.0.0
+  description: |
+    Edge-deployed JWT auth microservice. Hono + D1 + Workers.
+    Gatekeeper for 30 Services. 5 auth endpoints + health.
+    Live: https://aaas.emmanueljin101.workers.dev
+  contact:
+    name: Emmanuel Phiri
+    url: https://aaas.emmanueljin101.workers.dev
+servers:
+  - url: https://aaas.emmanueljin101.workers.dev
+    description: Production (Cloudflare Workers)
+  - url: http://localhost:8787
+    description: Local wrangler dev
+paths:
+  /:
+    get:
+      summary: Service info
+      operationId: getRoot
+      tags: [Health]
+      responses:
+        '200':
+          description: Service info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string, example: auth-service }
+                  status: { type: string, example: ok }
+                  version: { type: string, example: 1.0.0 }
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags: [Health]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, example: true }
+  /auth/register:
+    post:
+      summary: Register new user
+      operationId: register
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+            examples:
+              valid:
+                value: { email: user@example.com, password: SecurePass123! }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RegisterResponse' }
+        '400':
+          description: Bad input
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: Valid email and password (min 8 chars) required }
+        '409':
+          description: Email exists
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: Email already registered }
+  /auth/login:
+    post:
+      summary: Login — issue token pair
+      operationId: login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+            examples:
+              valid:
+                value: { email: user@example.com, password: SecurePass123! }
+      responses:
+        '200':
+          description: Tokens
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: Invalid credentials }
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      operationId: refresh
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200':
+          description: New access token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RefreshResponse' }
+        '400':
+          description: Missing token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: Invalid/expired/revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: Invalid or expired refresh token }
+  /auth/verify:
+    get:
+      summary: Verify access token (for other services)
+      operationId: verify
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema: { type: string, example: Bearer eyJhbGciOiJIUzI1NiIs... }
+          description: Bearer token
+      responses:
+        '200':
+          description: Valid token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifyResponse' }
+        '401':
+          description: Missing/invalid/expired or user deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: Invalid or expired token }
+  /auth/logout:
+    post:
+      summary: Revoke refresh token
+      operationId: logout
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LogoutRequest' }
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Logged out successfully }
+        '400':
+          description: Missing token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found / already revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: Token not found or already revoked }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: user@example.com }
+        password: { type: string, minLength: 8, example: SecurePass123! }
+    RegisterResponse:
+      type: object
+      properties:
+        message: { type: string, example: User registered successfully }
+        user_id: { type: string, format: uuid, example: 550e8400-e29b-41d4-a716-446655440000 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    LoginResponse:
+      type: object
+      properties:
+        access_token: { type: string, example: eyJhbGciOiJIUzI1NiIs... }
+        refresh_token: { type: string, format: uuid, example: a1b2c3d4-1234-5678-9012-abcdef123456 }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 900, description: seconds (15m) }
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string, format: uuid }
+    RefreshResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 900 }
+    VerifyResponse:
+      type: object
+      properties:
+        valid: { type: boolean, example: true }
+        user_id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        exp: { type: integer, example: 1725220000, description: Unix seconds }
+    LogoutRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string, format: uuid }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+tags:
+  - name: Auth
+  - name: Health

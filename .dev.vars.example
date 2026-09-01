@@ -1,0 +1,4 @@
+# Copy to .dev.vars for local `wrangler dev`
+# NEVER commit .dev.vars — secrets are encrypted via `wrangler secret put` in prod
+JWT_SECRET="replace-with-32-plus-char-random-string-for-hs256"
+REFRESH_SECRET="another-32-plus-char-random-string-different-from-jwt"
