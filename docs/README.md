@@ -6,6 +6,8 @@ Central JWT identity provider for the 30 Services challenge. One auth service, 2
 
 ## Architecture
 
+**Interactive:** [architecture.html](./architecture.html) — pan/zoom, trace, light/dark, focus views, PNG export (showcase validated, 4 viewports)
+
 ```
 [ Client / Frontend / Microservice ]
         │  Authorization: Bearer <JWT>
@@ -17,6 +19,8 @@ Central JWT identity provider for the 30 Services challenge. One auth service, 2
         └─ JWT HS256 (15m) + refresh SHA-256 (7d, revocable)
 ```
 
+> Open [architecture.html](./architecture.html) for the full interactive diagram (9 nodes, 8 connections, 2 boundaries, 3 cards, 3 guided views). Spec: [aaas.architecture.json](./aaas.architecture.json) (3732 bytes, sha256 `d1c8bd24…`)
+
 - **Stateless verify:** `hono/jwt` `verify(token, JWT_SECRET, 'HS256')` then `SELECT id FROM users WHERE id=?` (defense in depth).
 - **Stateful sessions:** `refresh_tokens` table, `token_hash = SHA-256(raw:REFRESH_SECRET)`, O(1) indexed lookup, `revoked` flag.
 
@@ -24,6 +28,8 @@ Central JWT identity provider for the 30 Services challenge. One auth service, 2
 
 | Doc | Purpose |
 |-----|---------|
+| [architecture.html](./architecture.html) | **Interactive diagram** — 9 checks pass, 4 viewports |
+| [aaas.architecture.json](./aaas.architecture.json) | Diagram spec (source) |
 | [API.md](./API.md) | Full endpoint spec + live cURL |
 | [openapi.yaml](./openapi.yaml) | OpenAPI 3.0.3 — import to Postman/Swagger |
 | [DEPLOYMENT.md](./DEPLOYMENT.md) | 7-step deploy + verify |

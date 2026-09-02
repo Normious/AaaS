@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "AAAS — Auth-as-a-Service (Hono + D1 + Workers)",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "primary-path", "label": "Primary auth flow", "focus": ["clients", "cf_edge", "worker_aaas", "d1_db"], "note": "Client → Edge → Worker → D1" },
+      { "id": "verify-gate", "label": "Verify gatekeeper", "focus": ["other_services", "worker_aaas", "d1_db"], "note": "Other services call GET /auth/verify" },
+      { "id": "crypto-trust", "label": "Crypto & secrets", "focus": ["hash_layer", "secrets", "tables_users"], "note": "PBKDF2 peppered with secrets" }
+    ]
+  },
+  "components": [
+    { "id": "clients", "type": "external", "label": "Clients", "sublabel": "Browser / Mobile / Postman", "pos": [40, 180], "size": [150, 60] },
+    { "id": "other_services", "type": "external", "label": "Other Services", "sublabel": "PayChangu · Limiter", "pos": [800, 180], "size": [150, 60] },
+    { "id": "cf_edge", "type": "cloud", "label": "Cloudflare Edge", "sublabel": "Global Workers", "pos": [280, 180], "size": [150, 60], "tag": "TLS Anycast" },
+    { "id": "worker_aaas", "type": "backend", "label": "AAAS Worker", "sublabel": "Hono · aaas.emmanueljin101.workers.dev", "pos": [520, 180], "size": [200, 64], "tag": "HS256 15m" },
+    { "id": "secrets", "type": "security", "label": "Secrets", "sublabel": "JWT_SECRET · REFRESH_SECRET", "pos": [520, 60], "size": [200, 56], "tag": "secret put" },
+    { "id": "hash_layer", "type": "security", "label": "Crypto", "sublabel": "PBKDF2 100k · SHA-256", "pos": [280, 340], "size": [150, 60], "tag": "Web Crypto" },
+    { "id": "d1_db", "type": "database", "label": "D1 SQLite", "sublabel": "auth-db 41e0f1fc…", "pos": [520, 340], "size": [200, 60] },
+    { "id": "tables_users", "type": "database", "label": "users", "sublabel": "id · email · hash · salt", "pos": [800, 320], "size": [160, 60] },
+    { "id": "tables_refresh", "type": "database", "label": "refresh_tokens", "sublabel": "token_hash · expires · revoked", "pos": [800, 410], "size": [160, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Cloudflare Global Edge", "wraps": ["cf_edge", "worker_aaas", "secrets", "hash_layer", "d1_db", "tables_users", "tables_refresh"] },
+    { "kind": "security-group", "label": "Trust Boundary", "wraps": ["worker_aaas", "secrets", "hash_layer"] }
+  ],
+  "connections": [
+    { "id": "clients-to-edge", "from": "clients", "to": "cf_edge", "label": "HTTPS" },
+    { "id": "edge-to-worker", "from": "cf_edge", "to": "worker_aaas" },
+    { "id": "other-to-worker", "from": "other_services", "to": "worker_aaas", "label": "GET /auth/verify", "variant": "security", "labelDy": -28 },
+    { "id": "worker-to-secrets", "from": "worker_aaas", "to": "secrets", "variant": "dashed" },
+    { "id": "worker-to-crypto", "from": "worker_aaas", "to": "hash_layer", "variant": "dashed" },
+    { "id": "worker-to-d1", "from": "worker_aaas", "to": "d1_db", "label": "SQL", "labelDy": 24 },
+    { "id": "d1-to-users", "from": "d1_db", "to": "tables_users" },
+    { "id": "d1-to-refresh", "from": "d1_db", "to": "tables_refresh", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Edge", "items": ["Cloudflare Edge terminates TLS → AAAS Worker (Hono)", "Live: https://aaas.emmanueljin101.workers.dev · GET /health"] },
+    { "dot": "emerald", "title": "Application", "items": ["5 routes: register, login, refresh, verify, logout", "D1: users + refresh_tokens, O(1) token_hash lookup"] },
+    { "dot": "rose", "title": "Security", "items": ["PBKDF2 100k per-user salt, SHA-256 peppered refresh", "Secrets via wrangler secret put, 15m JWT + 7d refresh"] }
+  ]
+}

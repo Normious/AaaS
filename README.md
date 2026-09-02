@@ -6,7 +6,7 @@
 
 Edge-deployed JWT auth microservice. **Hono + D1 + Workers**. Gatekeeper for the 30 Services challenge.
 
-> **Docs:** [docs/README.md](docs/README.md) • [API](docs/API.md) • [OpenAPI](docs/openapi.yaml) • [Deployment](docs/DEPLOYMENT.md) • [Integration](docs/INTEGRATION.md) • [Security](docs/SECURITY.md) • [TDS](AaaS.md)
+> **Docs:** [Interactive Architecture](docs/architecture.html) • [docs/README.md](docs/README.md) • [API](docs/API.md) • [OpenAPI](docs/openapi.yaml) • [Deployment](docs/DEPLOYMENT.md) • [Integration](docs/INTEGRATION.md) • [Security](docs/SECURITY.md) • [TDS](AaaS.md)
 
 ## Stack
 - **Runtime:** Cloudflare Workers
