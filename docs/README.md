@@ -21,6 +21,10 @@ Central JWT identity provider for the 30 Services challenge. One auth service, 2
 
 > Open [architecture.html](./architecture.html) for the full interactive diagram (9 nodes, 8 connections, 2 boundaries, 3 cards, 3 guided views). Spec: [aaas.architecture.json](./aaas.architecture.json) (3732 bytes, sha256 `d1c8bd24…`)
 
+![AAAS Architecture — 2048×1320 light](architecture.visual-check.2048x1320.light.png)
+
+> **Big preview** — 2048×1320 light (184 KB). Click image for interactive. Dark: [architecture.visual-check.2048x1320.dark.png](./architecture.visual-check.2048x1320.dark.png) · S: [1440×900 light](./architecture.visual-check.1440x900.light.png)
+
 - **Stateless verify:** `hono/jwt` `verify(token, JWT_SECRET, 'HS256')` then `SELECT id FROM users WHERE id=?` (defense in depth).
 - **Stateful sessions:** `refresh_tokens` table, `token_hash = SHA-256(raw:REFRESH_SECRET)`, O(1) indexed lookup, `revoked` flag.
 

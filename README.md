@@ -8,6 +8,12 @@ Edge-deployed JWT auth microservice. **Hono + D1 + Workers**. Gatekeeper for the
 
 > **Docs:** [Interactive Architecture](docs/architecture.html) • [docs/README.md](docs/README.md) • [API](docs/API.md) • [OpenAPI](docs/openapi.yaml) • [Deployment](docs/DEPLOYMENT.md) • [Integration](docs/INTEGRATION.md) • [Security](docs/SECURITY.md) • [TDS](AaaS.md)
 
+## Architecture — Interactive + Big Preview
+
+[![AAAS Architecture — 2048×1320](docs/architecture.visual-check.2048x1320.light.png)](docs/architecture.html)
+
+> **Big preview** (2048×1320 light — 184 KB) — click for interactive pan/zoom/trace + light/dark + PNG export. Also available: [dark variant](docs/architecture.visual-check.2048x1320.dark.png) & [1440×900 light](docs/architecture.visual-check.1440x900.light.png). Full showcase: 9/9 checks, 0 errors.
+
 ## Stack
 - **Runtime:** Cloudflare Workers
 - **Framework:** Hono 4 + `hono/jwt` (HS256)
